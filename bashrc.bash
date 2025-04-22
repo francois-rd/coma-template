@@ -35,4 +35,3 @@ export -f launch
 complete -W "
 test.launch
 " launch
-
