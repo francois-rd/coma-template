@@ -24,9 +24,25 @@ class Walk:
     # The full path to the file.
     path: str
 
-    def map(self, new_root: str, do_ensure_path: bool = False) -> str:
-        """Convenience method for remapping the 'base' to a new root."""
-        new_path = str(os.path.join(new_root, self.base))
+    def no_ext(self, full_path: bool = False) -> str:
+        """
+        Convenience method for removing the file extension from 'base' (if 'full_path'
+        is False) or from 'path' (otherwise).
+        """
+        return os.path.splitext(self.path if full_path else self.base)[0]
+
+    def map(
+        self,
+        new_root: str,
+        do_ensure_path: bool = False,
+        ext: Optional[str] = None,
+    ) -> str:
+        """
+        Convenience method for remapping the 'base' to a new root and possibly
+        changing the file extension.
+        """
+        base = self.base if ext is None else self.no_ext() + ext
+        new_path = str(os.path.join(new_root, base))
         return ensure_path(new_path) if do_ensure_path else new_path
 
 
@@ -39,7 +55,7 @@ def scrub_for_format(text: str) -> str:
     return text.replace("{", "").replace("}", "")
 
 
-E = TypeVar("E", bound=Enum)
+EnumSubType = TypeVar("EnumSubType", bound=Enum)
 
 
 def to_upper(s: str) -> str:
@@ -48,11 +64,13 @@ def to_upper(s: str) -> str:
 
 
 def enum_from_str(
-    enum_type: Type[E],
+    enum_type: Type[EnumSubType],
     s: str,
     to_name: Optional[Callable[[str], str]] = to_upper,
-) -> E:
-    """Returns the member of 'E' whose name is 's', or to_name(s) if not None."""
+) -> EnumSubType:
+    """
+    Returns the member of 'E' whose name is 's' or is to_name(s) if 'to_name' not None.
+    """
     mod = s if to_name is None else to_name(s)
     try:
         return enum_type[mod]
@@ -147,7 +165,7 @@ def dumps_dataclasses(
     object. kwargs are passed to json.dump() and dict_factory to dataclasses.asdict().
     """
 
-    return json.dumps([asdict(o, dict_factory=dict_factory) for o in objs], **kwargs)
+    return json.dumps(to_dicts(*objs, dict_factory=dict_factory), **kwargs)
 
 
 def to_dicts(
@@ -278,7 +296,7 @@ def walk_lines(root: str) -> Iterable[tuple[list[str], Walk]]:
 
 def walk_json(root: str, **kwargs) -> Iterable[tuple[Any, Walk]]:
     """
-    Yields a JSON object each file in the root directory.
+    Yields a JSON object from each file in the root directory.
     kwargs are passed to json.load().
     """
     yield from walk_fn(root, load_json, **kwargs)
