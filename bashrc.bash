@@ -14,7 +14,8 @@ fi
 
 # Library path (needed only for Pycharm because of seeming bug).
 # NOTE: Change your python version if needed.
-#export PYTHONPATH=$PYTHONPATH:"$COMA_PROJECT_ROOT_DIR"/.venv/lib/python3.9/site-packages
+#PY_VERSION=python3.9
+#export PYTHONPATH=$PYTHONPATH:"$COMA_PROJECT_ROOT_DIR"/.venv/lib/"$PY_VERSION"/site-packages
 
 # Environment variables for launching without commands and configs.
 export COMA_DEFAULT_CONFIG_DIR="$COMA_PROJECT_ROOT_DIR"/launch
@@ -26,7 +27,7 @@ mkdir -p "$COMA_DEFAULT_CONFIG_DIR"
 # Alias for program entry.
 launch () {
   pushd "$COMA_DEFAULT_CONFIG_DIR" > /dev/null || exit
-  python "$COMA_PROJECT_ROOT_DIR"/src/main.py "$@"
+  "$PY_VERSION" "$COMA_PROJECT_ROOT_DIR"/src/main.py "$@"
   popd > /dev/null || exit
 }
 export -f launch
